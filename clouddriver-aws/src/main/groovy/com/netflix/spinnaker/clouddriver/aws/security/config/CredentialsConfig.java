@@ -144,6 +144,7 @@ public class CredentialsConfig {
     private String edda;
     private Boolean eddaEnabled;
     private Boolean lambdaEnabled;
+    private Boolean ecsEnabled;
     private String discovery;
     private Boolean discoveryEnabled;
     private String front50;
@@ -334,10 +335,12 @@ public class CredentialsConfig {
     public Boolean getLambdaEnabled() {
       return lambdaEnabled;
     }
-
     public void setLambdaEnabled(Boolean lambdaEnabled) {
       this.lambdaEnabled = lambdaEnabled;
     }
+
+    public Boolean getEcsEnabled() { return ecsEnabled; }
+    public void setEcsEnabled(Boolean ecsEnabled) { this.ecsEnabled = ecsEnabled; }
   }
 
   private String accessKeyId;

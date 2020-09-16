@@ -53,7 +53,8 @@ public class NetflixAssumeRoleAmazonCredentials extends NetflixAmazonCredentials
       @JsonProperty("shieldEnabled") Boolean shieldEnabled,
       @JsonProperty("assumeRole") String assumeRole,
       @JsonProperty("sessionName") String sessionName,
-      @JsonProperty("lambdaEnabled") Boolean lambdaEnabled) {
+      @JsonProperty("lambdaEnabled") Boolean lambdaEnabled,
+      @JsonProperty("ecsEnabled") Boolean ecsEnabled) {
 
     this(
         name,
@@ -80,7 +81,8 @@ public class NetflixAssumeRoleAmazonCredentials extends NetflixAmazonCredentials
         shieldEnabled,
         assumeRole,
         sessionName,
-        lambdaEnabled);
+        lambdaEnabled,
+        ecsEnabled);
   }
 
   public NetflixAssumeRoleAmazonCredentials(
@@ -110,7 +112,8 @@ public class NetflixAssumeRoleAmazonCredentials extends NetflixAmazonCredentials
         copy.getShieldEnabled(),
         copy.getAssumeRole(),
         copy.getSessionName(),
-        copy.getLambdaEnabled());
+        copy.getLambdaEnabled(),
+        copy.getEcsEnabled());
   }
 
   NetflixAssumeRoleAmazonCredentials(
@@ -138,7 +141,8 @@ public class NetflixAssumeRoleAmazonCredentials extends NetflixAmazonCredentials
       Boolean shieldEnabled,
       String assumeRole,
       String sessionName,
-      Boolean lambdaEnabled) {
+      Boolean lambdaEnabled,
+      Boolean ecsEnabled) {
     super(
         name,
         environment,
@@ -166,7 +170,8 @@ public class NetflixAssumeRoleAmazonCredentials extends NetflixAmazonCredentials
         bastionHost,
         bastionEnabled,
         shieldEnabled,
-        lambdaEnabled);
+        lambdaEnabled,
+        ecsEnabled);
     this.assumeRole = assumeRole;
     this.sessionName =
         sessionName == null ? AssumeRoleAmazonCredentials.DEFAULT_SESSION_NAME : sessionName;

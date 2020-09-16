@@ -44,7 +44,6 @@ import org.springframework.stereotype.Component;
 public class EcsLoadBalancerProvider implements LoadBalancerProvider<EcsLoadBalancer> {
 
   private final EcsLoadbalancerCacheClient ecsLoadbalancerCacheClient;
-  private final EcsAccountMapper ecsAccountMapper;
   private final ServiceCacheClient ecsServiceCacheClient;
   private final EcsTargetGroupCacheClient ecsTargetGroupCacheClient;
 
@@ -53,11 +52,9 @@ public class EcsLoadBalancerProvider implements LoadBalancerProvider<EcsLoadBala
   @Autowired
   public EcsLoadBalancerProvider(
       EcsLoadbalancerCacheClient ecsLoadbalancerCacheClient,
-      EcsAccountMapper ecsAccountMapper,
       ServiceCacheClient ecsServiceCacheClient,
       EcsTargetGroupCacheClient ecsTargetGroupCacheClient) {
     this.ecsLoadbalancerCacheClient = ecsLoadbalancerCacheClient;
-    this.ecsAccountMapper = ecsAccountMapper;
     this.ecsServiceCacheClient = ecsServiceCacheClient;
     this.ecsTargetGroupCacheClient = ecsTargetGroupCacheClient;
   }
@@ -135,8 +132,8 @@ public class EcsLoadBalancerProvider implements LoadBalancerProvider<EcsLoadBala
 
     // find all the target group cache keys
     for (Service service : services) {
-      String awsAccountName =
-          ecsAccountMapper.fromEcsAccountNameToAwsAccountName(service.getAccount());
+      String awsAccountName = service.getAccount();
+//          ecsAccountMapper.fromEcsAccountNameToAwsAccountName(service.getAccount());
       for (LoadBalancer loadBalancer : service.getLoadBalancers()) {
         if (loadBalancer.getTargetGroupArn() != null) {
           String tgArn = loadBalancer.getTargetGroupArn();

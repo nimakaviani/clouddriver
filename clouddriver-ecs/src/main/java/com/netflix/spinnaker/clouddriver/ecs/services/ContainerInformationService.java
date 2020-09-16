@@ -31,19 +31,22 @@ import com.netflix.spinnaker.clouddriver.ecs.cache.model.ContainerInstance;
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.Service;
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.Task;
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.TaskHealth;
-import com.netflix.spinnaker.clouddriver.ecs.security.ECSCredentialsConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.netflix.spinnaker.clouddriver.security.AccountCredentialsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 @Component
+@DependsOn("netflixAmazonCredentials")
 public class ContainerInformationService {
 
-  private final ECSCredentialsConfig ecsCredentialsConfig;
+  private final AccountCredentialsRepository credentialsRepository;
   private final TaskCacheClient taskCacheClient;
   private final ServiceCacheClient serviceCacheClient;
   private final TaskHealthCacheClient taskHealthCacheClient;
@@ -53,14 +56,14 @@ public class ContainerInformationService {
 
   @Autowired
   public ContainerInformationService(
-      ECSCredentialsConfig ecsCredentialsConfig,
+      AccountCredentialsRepository credentialsRepository,
       TaskCacheClient taskCacheClient,
       ServiceCacheClient serviceCacheClient,
       TaskHealthCacheClient taskHealthCacheClient,
       TaskDefinitionCacheClient taskDefinitionCacheClient,
       EcsInstanceCacheClient ecsInstanceCacheClient,
       ContainerInstanceCacheClient containerInstanceCacheClient) {
-    this.ecsCredentialsConfig = ecsCredentialsConfig;
+    this.credentialsRepository = credentialsRepository;
     this.taskCacheClient = taskCacheClient;
     this.serviceCacheClient = serviceCacheClient;
     this.taskHealthCacheClient = taskHealthCacheClient;
@@ -220,9 +223,9 @@ public class ContainerInformationService {
     return null;
   }
 
-  public Instance getEc2Instance(String ecsAccount, String region, Task task) {
+  public Instance getEc2Instance(String account, String region, Task task) {
     String containerInstanceCacheKey =
-        Keys.getContainerInstanceKey(ecsAccount, region, task.getContainerInstanceArn());
+        Keys.getContainerInstanceKey(account, region, task.getContainerInstanceArn());
     ContainerInstance containerInstance =
         containerInstanceCacheClient.get(containerInstanceCacheKey);
     if (containerInstance == null) {
@@ -231,7 +234,7 @@ public class ContainerInformationService {
 
     Set<Instance> instances =
         ecsInstanceCacheClient.find(
-            containerInstance.getEc2InstanceId(), getAwsAccountName(ecsAccount), region);
+            containerInstance.getEc2InstanceId(), account, region);
     if (instances.size() > 1) {
       throw new IllegalArgumentException(
           "There cannot be more than 1 EC2 container instance for a given region and instance ID.");
@@ -240,15 +243,6 @@ public class ContainerInformationService {
     }
 
     return instances.iterator().next();
-  }
-
-  private String getAwsAccountName(String ecsAccountName) {
-    for (ECSCredentialsConfig.Account ecsAccount : ecsCredentialsConfig.getAccounts()) {
-      if (ecsAccount.getName().equals(ecsAccountName)) {
-        return ecsAccount.getAwsAccount();
-      }
-    }
-    return null;
   }
 
   private int getAddressHostPortForMultipleContainers(Task task) {

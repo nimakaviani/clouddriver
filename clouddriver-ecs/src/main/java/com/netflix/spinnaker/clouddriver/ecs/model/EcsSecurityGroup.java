@@ -17,6 +17,7 @@
 package com.netflix.spinnaker.clouddriver.ecs.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.netflix.spinnaker.clouddriver.aws.model.AmazonSecurityGroup;
 import com.netflix.spinnaker.clouddriver.ecs.EcsCloudProvider;
 import com.netflix.spinnaker.clouddriver.model.SecurityGroup;
 import com.netflix.spinnaker.clouddriver.model.SecurityGroupSummary;
@@ -39,6 +40,20 @@ public class EcsSecurityGroup implements SecurityGroup {
   final String region;
   final Set<Rule> inboundRules;
   final Set<Rule> outboundRules;
+
+  public EcsSecurityGroup(AmazonSecurityGroup sg) {
+    this(
+      sg.getId(),
+      sg.getName(),
+      sg.getVpcId(),
+      sg.getDescription(),
+      sg.getApplication(),
+      sg.getAccountName(),
+      sg.getAccountId(),
+      sg.getRegion(),
+      sg.getInboundRules(),
+      sg.getOutboundRules());
+  }
 
   public EcsSecurityGroup(
       String id,

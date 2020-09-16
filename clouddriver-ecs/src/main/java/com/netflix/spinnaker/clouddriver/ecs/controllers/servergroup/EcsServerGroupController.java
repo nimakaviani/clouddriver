@@ -25,7 +25,6 @@ import com.netflix.spinnaker.clouddriver.aws.security.NetflixAmazonCredentials;
 import com.netflix.spinnaker.clouddriver.ecs.cache.client.ServiceCacheClient;
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.Service;
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsServerGroupEvent;
-import com.netflix.spinnaker.clouddriver.ecs.security.NetflixECSCredentials;
 import com.netflix.spinnaker.clouddriver.security.AccountCredentialsProvider;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +65,7 @@ public class EcsServerGroupController {
     NetflixAmazonCredentials credentials =
         (NetflixAmazonCredentials) accountCredentialsProvider.getCredentials(account);
 
-    if (!(credentials instanceof NetflixECSCredentials)) {
+    if (!credentials.getEcsEnabled()) {
       return new ResponseEntity(
           String.format("Account %s is not an ECS account", account), HttpStatus.BAD_REQUEST);
     }

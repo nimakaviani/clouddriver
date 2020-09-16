@@ -21,6 +21,8 @@ import com.netflix.spinnaker.clouddriver.ecs.EcsCloudProvider;
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsSecurityGroup;
 import com.netflix.spinnaker.clouddriver.model.SecurityGroupProvider;
 import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,67 +33,47 @@ class EcsSecurityGroupProvider implements SecurityGroupProvider<EcsSecurityGroup
 
   final AmazonSecurityGroupProvider amazonSecurityGroupProvider;
 
-  final AmazonPrimitiveConverter amazonPrimitiveConverter;
-
-  final EcsAccountMapper ecsAccountMapper;
-
   @Autowired
   EcsSecurityGroupProvider(
-      AmazonPrimitiveConverter amazonPrimitiveConverter,
-      AmazonSecurityGroupProvider amazonSecurityGroupProvider,
-      EcsAccountMapper ecsAccountMapper) {
-    this.amazonPrimitiveConverter = amazonPrimitiveConverter;
+      AmazonSecurityGroupProvider amazonSecurityGroupProvider){
     this.amazonSecurityGroupProvider = amazonSecurityGroupProvider;
-    this.ecsAccountMapper = ecsAccountMapper;
   }
 
   @Override
   public Collection<EcsSecurityGroup> getAll(boolean includeRules) {
-    return amazonPrimitiveConverter.convertToEcsSecurityGroup(
-        amazonSecurityGroupProvider.getAll(includeRules));
+    return amazonSecurityGroupProvider.getAll(includeRules).stream().map(it -> new EcsSecurityGroup(it)).collect(Collectors.toSet());
   }
 
   @Override
   public Collection<EcsSecurityGroup> getAllByRegion(boolean includeRules, String region) {
-    return amazonPrimitiveConverter.convertToEcsSecurityGroup(
-        amazonSecurityGroupProvider.getAllByRegion(includeRules, region));
+    return amazonSecurityGroupProvider.getAllByRegion(includeRules, region).stream().map(it -> new EcsSecurityGroup(it)).collect(Collectors.toSet());
   }
 
   @Override
   public Collection<EcsSecurityGroup> getAllByAccount(boolean includeRules, String account) {
-    String awsAccount = ecsAccountMapper.fromEcsAccountNameToAwsAccountName(account);
-    return amazonPrimitiveConverter.convertToEcsSecurityGroup(
-        amazonSecurityGroupProvider.getAllByAccount(includeRules, awsAccount));
+    return amazonSecurityGroupProvider.getAllByAccount(includeRules, account).stream().map(it -> new EcsSecurityGroup(it)).collect(Collectors.toSet());
   }
 
   @Override
   public Collection<EcsSecurityGroup> getAllByAccountAndName(
       boolean includeRules, String account, String name) {
-    String awsAccount = ecsAccountMapper.fromEcsAccountNameToAwsAccountName(account);
-    return amazonPrimitiveConverter.convertToEcsSecurityGroup(
-        amazonSecurityGroupProvider.getAllByAccountAndName(includeRules, awsAccount, name));
+    return amazonSecurityGroupProvider.getAllByAccountAndName(includeRules, account, name).stream().map(it -> new EcsSecurityGroup(it)).collect(Collectors.toSet());
   }
 
   @Override
   public Collection<EcsSecurityGroup> getAllByAccountAndRegion(
       boolean includeRules, String account, String region) {
-    String awsAccount = ecsAccountMapper.fromEcsAccountNameToAwsAccountName(account);
-    return amazonPrimitiveConverter.convertToEcsSecurityGroup(
-        amazonSecurityGroupProvider.getAllByAccountAndRegion(includeRules, awsAccount, region));
+    return amazonSecurityGroupProvider.getAllByAccountAndRegion(includeRules, account, region).stream().map(it -> new EcsSecurityGroup(it)).collect(Collectors.toSet());
   }
 
   @Override
   public EcsSecurityGroup get(String account, String region, String name, String vpcId) {
-    String awsAccount = ecsAccountMapper.fromEcsAccountNameToAwsAccountName(account);
-    return amazonPrimitiveConverter.convertToEcsSecurityGroup(
-        amazonSecurityGroupProvider.get(awsAccount, region, name, vpcId));
+    return new EcsSecurityGroup(amazonSecurityGroupProvider.get(account, region, name, vpcId));
   }
 
   @Override
   public EcsSecurityGroup getById(String account, String region, String id, String vpcId) {
-    String awsAccount = ecsAccountMapper.fromEcsAccountNameToAwsAccountName(account);
-    return amazonPrimitiveConverter.convertToEcsSecurityGroup(
-        amazonSecurityGroupProvider.getById(awsAccount, region, id, vpcId));
+    return new EcsSecurityGroup(amazonSecurityGroupProvider.getById(account, region, id, vpcId));
   }
 
   @Override

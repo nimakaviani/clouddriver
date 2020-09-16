@@ -21,6 +21,9 @@ import com.netflix.spinnaker.clouddriver.ecs.EcsCloudProvider;
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsSubnet;
 import com.netflix.spinnaker.clouddriver.model.SubnetProvider;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,14 +31,11 @@ import org.springframework.stereotype.Component;
 public class EcsSubnetProvider implements SubnetProvider<EcsSubnet> {
 
   final AmazonSubnetProvider amazonSubnetProvider;
-  final AmazonPrimitiveConverter amazonPrimitiveConverter;
 
   @Autowired
   public EcsSubnetProvider(
-      AmazonSubnetProvider amazonSubnetProvider,
-      AmazonPrimitiveConverter amazonPrimitiveConverter) {
+      AmazonSubnetProvider amazonSubnetProvider) {
     this.amazonSubnetProvider = amazonSubnetProvider;
-    this.amazonPrimitiveConverter = amazonPrimitiveConverter;
   }
 
   @Override
@@ -45,6 +45,6 @@ public class EcsSubnetProvider implements SubnetProvider<EcsSubnet> {
 
   @Override
   public Set<EcsSubnet> getAll() {
-    return amazonPrimitiveConverter.convertToEcsSubnet(amazonSubnetProvider.getAll());
+    return amazonSubnetProvider.getAll().stream().map(it -> new EcsSubnet(it)).collect(Collectors.toSet());
   }
 }

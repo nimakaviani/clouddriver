@@ -22,6 +22,23 @@ public class EcsSubnet extends AmazonSubnet {
 
   public EcsSubnet() {}
 
+  public EcsSubnet(AmazonSubnet subnet){
+    this(
+      subnet.getType(),
+      subnet.getId(),
+      subnet.getState(),
+      subnet.getVpcId(),
+      subnet.getCidrBlock(),
+      subnet.getAvailableIpAddressCount(),
+      subnet.getAccount(),
+      subnet.getAccountId(),
+      subnet.getRegion(),
+      subnet.getAvailabilityZone(),
+      subnet.getPurpose(),
+      subnet.getTarget(),
+      subnet.getDeprecated());
+  }
+
   public EcsSubnet(
       String type,
       String id,

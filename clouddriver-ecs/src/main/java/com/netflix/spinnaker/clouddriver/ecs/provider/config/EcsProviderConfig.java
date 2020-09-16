@@ -34,6 +34,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -82,7 +84,9 @@ public class EcsProviderConfig {
     Set<String> scheduledAccounts = ProviderUtils.getScheduledAccounts(ecsProvider);
     Set<NetflixAmazonCredentials> allAccounts =
         ProviderUtils.buildThreadSafeSetOfAccounts(
-            accountCredentialsRepository, NetflixAmazonCredentials.class, EcsCloudProvider.ID);
+             accountCredentialsRepository, NetflixAmazonCredentials.class).
+          stream().filter(account -> account.getEcsEnabled()).collect(Collectors.toSet());
+
     List<Agent> newAgents = new LinkedList<>();
 
     for (NetflixAmazonCredentials credentials : allAccounts) {

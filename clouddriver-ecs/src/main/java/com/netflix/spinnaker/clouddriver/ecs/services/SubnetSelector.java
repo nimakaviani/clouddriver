@@ -20,8 +20,6 @@ import com.netflix.spinnaker.clouddriver.aws.cache.Keys;
 import com.netflix.spinnaker.clouddriver.aws.model.AmazonSubnet;
 import com.netflix.spinnaker.clouddriver.aws.provider.view.AmazonSubnetProvider;
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsSubnet;
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.AmazonPrimitiveConverter;
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.EcsAccountMapper;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,32 +30,21 @@ import org.springframework.stereotype.Component;
 public class SubnetSelector {
 
   AmazonSubnetProvider amazonSubnetProvider;
-  AmazonPrimitiveConverter converter;
-  EcsAccountMapper ecsAccountMapper;
 
   @Autowired
   public SubnetSelector(
-      AmazonSubnetProvider amazonSubnetProvider,
-      AmazonPrimitiveConverter converter,
-      EcsAccountMapper ecsAccountMapper) {
+      AmazonSubnetProvider amazonSubnetProvider){
     this.amazonSubnetProvider = amazonSubnetProvider;
-    this.converter = converter;
-    this.ecsAccountMapper = ecsAccountMapper;
   }
 
   public Collection<String> resolveSubnetsIds(
-      String ecsAccountName,
+      String accountName,
       String region,
       Collection<String> availabilityZones,
       String subnetType) {
-    String correspondingAwsAccountName =
-        ecsAccountMapper.fromEcsAccountNameToAws(ecsAccountName).getName();
 
-    Set<AmazonSubnet> amazonSubnets =
-        amazonSubnetProvider.getAllMatchingKeyPattern(
-            Keys.getSubnetKey("*", region, correspondingAwsAccountName));
-
-    Set<EcsSubnet> ecsSubnets = converter.convertToEcsSubnet(amazonSubnets);
+    Set<EcsSubnet> ecsSubnets = amazonSubnetProvider.getAllMatchingKeyPattern(
+      Keys.getSubnetKey("*", region, accountName)).stream().map(it -> new EcsSubnet(it)).collect(Collectors.toSet());
 
     Set<String> filteredSubnetIds =
         ecsSubnets.stream()
@@ -70,17 +57,15 @@ public class SubnetSelector {
   }
 
   public Collection<String> getSubnetVpcIds(
-      String ecsAccountName, String region, Collection<String> subnetIds) {
-    String correspondingAwsAccountName =
-        ecsAccountMapper.fromEcsAccountNameToAws(ecsAccountName).getName();
+      String accountName, String region, Collection<String> subnetIds) {
 
     Set<String> subnetKeys =
         subnetIds.stream()
-            .map(subnetId -> Keys.getSubnetKey(subnetId, region, correspondingAwsAccountName))
+            .map(subnetId -> Keys.getSubnetKey(subnetId, region, accountName))
             .collect(Collectors.toSet());
-    Set<AmazonSubnet> amazonSubnets = amazonSubnetProvider.loadResults(subnetKeys);
 
-    Set<EcsSubnet> ecsSubnets = converter.convertToEcsSubnet(amazonSubnets);
+    Set<EcsSubnet> ecsSubnets = amazonSubnetProvider.loadResults(subnetKeys).stream().
+      map(it -> new EcsSubnet(it)).collect(Collectors.toSet());
 
     return ecsSubnets.stream().map(AmazonSubnet::getVpcId).collect(Collectors.toSet());
   }

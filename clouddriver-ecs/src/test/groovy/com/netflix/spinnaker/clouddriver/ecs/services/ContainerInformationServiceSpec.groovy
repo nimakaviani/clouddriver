@@ -24,18 +24,21 @@ import com.amazonaws.services.ecs.model.HealthCheck
 import com.amazonaws.services.ecs.model.LoadBalancer
 import com.amazonaws.services.ecs.model.NetworkBinding
 import com.amazonaws.services.ecs.model.TaskDefinition
+import com.netflix.spinnaker.clouddriver.aws.security.NetflixAmazonCredentials
 import com.netflix.spinnaker.clouddriver.ecs.cache.client.*
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.ContainerInstance
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.Service
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.Task
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.TaskHealth
-import com.netflix.spinnaker.clouddriver.ecs.security.ECSCredentialsConfig
+import com.netflix.spinnaker.clouddriver.security.AccountCredentialsRepository
+
+//import com.netflix.spinnaker.clouddriver.ecs.security.ECSCredentialsConfig
 import org.assertj.core.util.Lists
 import spock.lang.Specification
 import spock.lang.Subject
 
 class ContainerInformationServiceSpec extends Specification {
-  def ecsCredentialsConfig = Mock(ECSCredentialsConfig)
+  def ecsCredentialsConfig = Mock(AccountCredentialsRepository)
   def taskCacheClient = Mock(TaskCacheClient)
   def serviceCacheClient = Mock(ServiceCacheClient)
   def taskHealthCacheClient = Mock(TaskHealthCacheClient)
@@ -255,11 +258,6 @@ class ContainerInformationServiceSpec extends Specification {
     def ip = '127.0.0.1'
     def port = 1337
 
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: account,
-      awsAccount: 'aws-' + account
-    )
-
     def task = new Task(
       containerInstanceArn: containerInstanceArn,
       containers: [
@@ -283,7 +281,6 @@ class ContainerInformationServiceSpec extends Specification {
 
     containerInstanceCacheClient.get(_) >> containerInstance
     ecsInstanceCacheClient.find(_, _, _) >> [instance]
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
 
     when:
     def retrievedIp = service.getTaskPrivateAddress(account, region, task)
@@ -320,11 +317,6 @@ class ContainerInformationServiceSpec extends Specification {
     def containerInstanceArn = 'container-instance-arn'
     def port = 1337
 
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: account,
-      awsAccount: 'aws-' + account
-    )
-
     def task = new Task(
       containerInstanceArn: containerInstanceArn,
       containers: [
@@ -346,7 +338,6 @@ class ContainerInformationServiceSpec extends Specification {
 
     containerInstanceCacheClient.get(_) >> containerInstance
     ecsInstanceCacheClient.find(_, _, _) >> [instance]
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
 
     when:
     def retrievedIp = service.getTaskPrivateAddress(account, region, task)
@@ -394,18 +385,12 @@ class ContainerInformationServiceSpec extends Specification {
       ]
     )
 
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'test-account',
-      awsAccount: 'aws-test-account'
-    )
-
     def containerInstance = new ContainerInstance(
       ec2InstanceId: 'i-deadbeef'
     )
 
     containerInstanceCacheClient.get(_) >> containerInstance
     ecsInstanceCacheClient.find(_, _, _) >> []
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
 
     when:
     def retrievedIp = service.getTaskPrivateAddress('test-account', 'us-west-1', task)
@@ -418,11 +403,6 @@ class ContainerInformationServiceSpec extends Specification {
     given:
     def account = 'test-account'
     def region = 'us-west-1'
-
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: account,
-      awsAccount: 'aws-' + account
-    )
 
     def task = new Task(
       containerInstanceArn: 'container-instance-arn',
@@ -454,7 +434,6 @@ class ContainerInformationServiceSpec extends Specification {
 
     containerInstanceCacheClient.get(_) >> containerInstance
     ecsInstanceCacheClient.find(_, _, _) >> [instance]
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
 
     when:
     def retrievedIp = service.getTaskPrivateAddress(account, region, task)
@@ -470,11 +449,6 @@ class ContainerInformationServiceSpec extends Specification {
     def containerInstanceArn = 'container-instance-arn'
     def ip = '127.0.0.1'
     def port = 1337
-
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: account,
-      awsAccount: 'aws-' + account
-    )
 
     def task = new Task(
       containerInstanceArn: containerInstanceArn,
@@ -500,7 +474,6 @@ class ContainerInformationServiceSpec extends Specification {
 
     containerInstanceCacheClient.get(_) >> containerInstance
     ecsInstanceCacheClient.find(_, _, _) >> [instance]
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
 
     when:
     def retrievedIp = service.getTaskPrivateAddress(account, region, task)
@@ -524,11 +497,6 @@ class ContainerInformationServiceSpec extends Specification {
       ]
     )
 
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'test-account',
-      awsAccount: 'aws-test-account'
-    )
-
     def containerInstance = new ContainerInstance(
       ec2InstanceId: 'i-deadbeef'
     )
@@ -538,7 +506,6 @@ class ContainerInformationServiceSpec extends Specification {
       new Instance(instanceId: "id-1"),
       new Instance(instanceId: "id-2")
     ]
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
 
     when:
     service.getTaskPrivateAddress('test-account', 'us-west-1', task)
@@ -552,10 +519,6 @@ class ContainerInformationServiceSpec extends Specification {
     given:
     def task = new Task(containerInstanceArn: 'container-instance-arn')
     def containerInstance = new ContainerInstance(ec2InstanceId: 'i-deadbeef')
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'ecs-account',
-      awsAccount: 'aws-test-account'
-    )
     def givenInstance = new Instance(
       instanceId: 'i-deadbeef',
       privateIpAddress: '0.0.0.0',
@@ -564,7 +527,6 @@ class ContainerInformationServiceSpec extends Specification {
     )
 
     containerInstanceCacheClient.get(_) >> containerInstance
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
     ecsInstanceCacheClient.find(_, _, _) >> [givenInstance]
 
     when:
@@ -593,10 +555,6 @@ class ContainerInformationServiceSpec extends Specification {
     given:
     def task = new Task(containerInstanceArn: 'container-instance-arn')
     def containerInstance = new ContainerInstance(ec2InstanceId: 'i-deadbeef')
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'ecs-account',
-      awsAccount: 'aws-test-account'
-    )
     def givenInstance = new Instance(
       instanceId: 'i-deadbeef',
       privateIpAddress: '0.0.0.0',
@@ -604,7 +562,6 @@ class ContainerInformationServiceSpec extends Specification {
     )
 
     containerInstanceCacheClient.get(_) >> containerInstance
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
     ecsInstanceCacheClient.find(_, _, _) >> [givenInstance]
 
     when:
@@ -652,10 +609,6 @@ class ContainerInformationServiceSpec extends Specification {
     given:
     def task = new Task(containerInstanceArn: 'container-instance-arn')
     def containerInstance = new ContainerInstance(ec2InstanceId: 'i-deadbeef')
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'ecs-account',
-      awsAccount: 'aws-test-account'
-    )
     def givenInstance = new Instance(
       instanceId: 'i-deadbeef',
       privateIpAddress: '0.0.0.0',
@@ -663,7 +616,6 @@ class ContainerInformationServiceSpec extends Specification {
     )
 
     containerInstanceCacheClient.get(_) >> containerInstance
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
     ecsInstanceCacheClient.find(_, _, _) >> [givenInstance]
 
 
@@ -691,13 +643,8 @@ class ContainerInformationServiceSpec extends Specification {
     given:
     def task = new Task(containerInstanceArn: 'container-instance-arn')
     def containerInstance = new ContainerInstance(ec2InstanceId: 'i-deadbeef')
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'ecs-account',
-      awsAccount: 'aws-test-account'
-    )
 
     containerInstanceCacheClient.get(_) >> containerInstance
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
     ecsInstanceCacheClient.find(_, _, _) >> []
 
 
@@ -712,10 +659,6 @@ class ContainerInformationServiceSpec extends Specification {
     given:
     def task = new Task(containerInstanceArn: 'container-instance-arn')
     def containerInstance = new ContainerInstance(ec2InstanceId: 'i-deadbeef')
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'ecs-account',
-      awsAccount: 'aws-test-account'
-    )
     def givenInstances = []
     0.upto(4, {
       givenInstances << new Instance(
@@ -726,7 +669,6 @@ class ContainerInformationServiceSpec extends Specification {
     })
 
     containerInstanceCacheClient.get(_) >> containerInstance
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
     ecsInstanceCacheClient.find(_, _, _) >> givenInstances
 
 
@@ -736,36 +678,5 @@ class ContainerInformationServiceSpec extends Specification {
     then:
     IllegalArgumentException exception = thrown()
     exception.message == 'There cannot be more than 1 EC2 container instance for a given region and instance ID.'
-  }
-
-  def 'should return an aws account name'(){
-    given:
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'ecs-account',
-      awsAccount: 'aws-test-account'
-    )
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
-
-    when:
-    def retrievedAccountName = service.getAwsAccountName(ecsAccount.getName())
-
-    then:
-    retrievedAccountName == ecsAccount.getAwsAccount()
-  }
-
-
-  def 'should return an null when no aws account is found associated to the ecs account'(){
-    given:
-    def ecsAccount = new ECSCredentialsConfig.Account(
-      name: 'ecs-account',
-      awsAccount: 'aws-test-account'
-    )
-    ecsCredentialsConfig.getAccounts() >> [ecsAccount]
-
-    when:
-    def retrievedAccountName = service.getAwsAccountName('wrong-account')
-
-    then:
-    retrievedAccountName == null
   }
 }

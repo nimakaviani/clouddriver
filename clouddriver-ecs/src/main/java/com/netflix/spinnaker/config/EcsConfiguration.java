@@ -22,5 +22,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan("com.netflix.spinnaker.clouddriver.ecs")
-@ConditionalOnProperty("ecs.enabled")
+@ConditionalOnProperty("aws.ecs.enabled")
 public class EcsConfiguration {}

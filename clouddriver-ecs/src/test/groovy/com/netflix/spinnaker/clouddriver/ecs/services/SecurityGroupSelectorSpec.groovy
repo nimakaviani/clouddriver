@@ -16,18 +16,15 @@
 
 package com.netflix.spinnaker.clouddriver.ecs.services
 
-import com.google.common.collect.Sets
 import com.netflix.spinnaker.clouddriver.aws.model.AmazonSecurityGroup
 import com.netflix.spinnaker.clouddriver.aws.provider.view.AmazonSecurityGroupProvider
 import com.netflix.spinnaker.clouddriver.aws.security.NetflixAmazonCredentials
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsSecurityGroup
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.AmazonPrimitiveConverter
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.EcsAccountMapper
 import spock.lang.Specification
 
 class SecurityGroupSelectorSpec extends Specification {
 
-  public static final String ECS_ACCOUNT = 'ecsAccount'
+  public static final String ECS_ACCOUNT = 'awsAccount'
   public static final String AWS_ACCOUNT = 'awsAccount'
   public static final String REGION = 'us-west-2'
   public static final String GOOD_SG_ID_1 = 'sg-aa123456'
@@ -42,8 +39,6 @@ class SecurityGroupSelectorSpec extends Specification {
   public static final String SG_NAME_4 = 'buzz'
 
   def amazonSecurityGroupProvider = Mock(AmazonSecurityGroupProvider)
-  def amazonPrimitiveConverter = Mock(AmazonPrimitiveConverter)
-  def accountMapper = Mock(EcsAccountMapper)
   def awsAccount = Mock(NetflixAmazonCredentials)
 
   def 'should find the right sg'() {
@@ -94,13 +89,9 @@ class SecurityGroupSelectorSpec extends Specification {
 
     awsAccount.name >> AWS_ACCOUNT
 
-    accountMapper.fromEcsAccountNameToAws(ECS_ACCOUNT) >> awsAccount
-
     amazonSecurityGroupProvider.getAllByAccountAndRegion(_, AWS_ACCOUNT, _) >> [sg1, sg2, sg3, sg4]
 
-    amazonPrimitiveConverter.convertToEcsSecurityGroup([sg1, sg2, sg3, sg4]) >> [ecsSG1, ecsSG2, ecsSG3, ecsSG4]
-
-    def sgSelector = new SecurityGroupSelector(amazonSecurityGroupProvider, amazonPrimitiveConverter, accountMapper)
+    def sgSelector = new SecurityGroupSelector(amazonSecurityGroupProvider)
 
 
     when:

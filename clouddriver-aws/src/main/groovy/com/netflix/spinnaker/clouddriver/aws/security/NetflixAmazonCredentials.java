@@ -36,6 +36,7 @@ public class NetflixAmazonCredentials extends AmazonCredentials {
   private final boolean bastionEnabled;
   private final boolean shieldEnabled;
   private final boolean lambdaEnabled;
+  private final boolean ecsEnabled;
 
   public NetflixAmazonCredentials(
       @JsonProperty("name") String name,
@@ -59,7 +60,8 @@ public class NetflixAmazonCredentials extends AmazonCredentials {
       @JsonProperty("bastionHost") String bastionHost,
       @JsonProperty("bastionEnabled") Boolean bastionEnabled,
       @JsonProperty("shieldEnabled") Boolean shieldEnabled,
-      @JsonProperty("lambdaEnabled") Boolean lambdaEnabled) {
+      @JsonProperty("lambdaEnabled") Boolean lambdaEnabled,
+      @JsonProperty("ecsEnabled") Boolean ecsEnabled){
     this(
         name,
         environment,
@@ -83,7 +85,8 @@ public class NetflixAmazonCredentials extends AmazonCredentials {
         bastionHost,
         bastionEnabled,
         shieldEnabled,
-        lambdaEnabled);
+        lambdaEnabled,
+        ecsEnabled);
   }
 
   private static boolean flagValue(String serviceUrl, Boolean flag) {
@@ -116,7 +119,8 @@ public class NetflixAmazonCredentials extends AmazonCredentials {
         copy.getBastionHost(),
         copy.getBastionEnabled(),
         copy.getShieldEnabled(),
-        copy.getLambdaEnabled());
+        copy.getLambdaEnabled(),
+        copy.getEcsEnabled());
   }
 
   NetflixAmazonCredentials(
@@ -142,7 +146,8 @@ public class NetflixAmazonCredentials extends AmazonCredentials {
       String bastionHost,
       Boolean bastionEnabled,
       Boolean shieldEnabled,
-      Boolean lambdaEnabled) {
+      Boolean lambdaEnabled,
+      Boolean ecsEnabled) {
     super(
         name,
         environment,
@@ -167,6 +172,7 @@ public class NetflixAmazonCredentials extends AmazonCredentials {
     this.bastionEnabled = flagValue(bastionHost, bastionEnabled);
     this.shieldEnabled = (shieldEnabled == null) ? false : shieldEnabled;
     this.lambdaEnabled = (lambdaEnabled == null) ? false : lambdaEnabled;
+    this.ecsEnabled = (ecsEnabled == null) ? false : ecsEnabled;
   }
 
   public String getEdda() {
@@ -208,4 +214,6 @@ public class NetflixAmazonCredentials extends AmazonCredentials {
   public boolean getLambdaEnabled() {
     return lambdaEnabled;
   }
+
+  public boolean getEcsEnabled() { return ecsEnabled; }
 }

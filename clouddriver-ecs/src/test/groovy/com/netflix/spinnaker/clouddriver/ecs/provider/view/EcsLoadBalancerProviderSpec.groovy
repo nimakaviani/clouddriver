@@ -25,8 +25,6 @@ import com.netflix.spinnaker.clouddriver.ecs.cache.model.EcsLoadBalancerCache
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.Service
 import com.netflix.spinnaker.clouddriver.ecs.model.loadbalancer.EcsLoadBalancer
 import com.netflix.spinnaker.clouddriver.ecs.model.loadbalancer.EcsTargetGroup
-import com.netflix.spinnaker.clouddriver.ecs.security.ECSCredentialsConfig
-import com.netflix.spinnaker.clouddriver.ecs.security.NetflixECSCredentials
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -37,18 +35,12 @@ class EcsLoadBalancerProviderSpec extends Specification {
   def mockLBCache = Mock(EcsLoadbalancerCacheClient)
   def mockServiceCache = Mock(ServiceCacheClient)
   def mockTargetGroupCache = Mock(EcsTargetGroupCacheClient)
-  def accountMapper = Mock(EcsAccountMapper)
 
   @Subject
   def provider = new EcsLoadBalancerProvider(
     mockLBCache,
-    accountMapper,
     mockServiceCache,
     mockTargetGroupCache)
-
-  def setup() {
-    accountMapper.fromEcsAccountNameToAwsAccountName(ECS_ACCOUNT) >> AWS_ACCOUNT
-  }
 
   def 'should retrieve an empty list'() {
     when:

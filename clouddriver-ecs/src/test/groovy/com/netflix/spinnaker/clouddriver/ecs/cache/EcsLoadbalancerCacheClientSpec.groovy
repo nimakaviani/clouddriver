@@ -25,7 +25,6 @@ import com.netflix.spinnaker.clouddriver.aws.data.Keys
 import com.netflix.spinnaker.clouddriver.ecs.EcsCloudProvider
 import com.netflix.spinnaker.clouddriver.ecs.cache.client.EcsLoadbalancerCacheClient
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.EcsLoadBalancerCache
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.EcsAccountMapper
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -33,29 +32,24 @@ class EcsLoadbalancerCacheClientSpec extends Specification {
   def cacheView = Mock(Cache)
   def objectMapper = new ObjectMapper()
                           .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-  def accountMapper = Mock(EcsAccountMapper)
 
   @Subject
-  def client = new EcsLoadbalancerCacheClient(cacheView, objectMapper, accountMapper)
+  def client = new EcsLoadbalancerCacheClient(cacheView, objectMapper)
 
   def 'should convert cache data into object'() {
     given:
     def loadBalancerName = 'test-name'
-    def ecsAccount = 'ecsAccount'
     def awsAccount = 'awsAccount'
     def region = 'us-west-1'
     def vpcId = 'vpc-id'
     def loadBalancerType = 'classic'
     def targetGroupName = 'test-target-group'
 
-    accountMapper.fromEcsAccountNameToAwsAccountName(ecsAccount) >> awsAccount
-    accountMapper.fromAwsAccountNameToEcsAccountName(awsAccount) >> ecsAccount
-
     def loadbalancerKey = Keys.getLoadBalancerKey(loadBalancerName, awsAccount, region, vpcId, loadBalancerType)
     def targetGroupKey = Keys.getTargetGroupKey(targetGroupName, awsAccount, region, TargetTypeEnum.Instance.toString(), vpcId)
 
     def givenEcsLoadbalancer = new EcsLoadBalancerCache(
-      account: ecsAccount,
+      account: awsAccount,
       region: region,
       loadBalancerArn: 'arn',
       loadBalancerType: loadBalancerType,

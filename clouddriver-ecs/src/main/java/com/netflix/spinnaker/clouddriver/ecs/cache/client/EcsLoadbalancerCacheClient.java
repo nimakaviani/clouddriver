@@ -25,7 +25,6 @@ import com.netflix.spinnaker.cats.cache.CacheData;
 import com.netflix.spinnaker.cats.cache.RelationshipCacheFilter;
 import com.netflix.spinnaker.clouddriver.aws.data.Keys;
 import com.netflix.spinnaker.clouddriver.ecs.cache.model.EcsLoadBalancerCache;
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.EcsAccountMapper;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -35,13 +34,11 @@ public class EcsLoadbalancerCacheClient {
 
   private final Cache cacheView;
   private final ObjectMapper objectMapper;
-  private final EcsAccountMapper ecsAccountMapper;
 
   public EcsLoadbalancerCacheClient(
-      Cache cacheView, ObjectMapper objectMapper, EcsAccountMapper ecsAccountMapper) {
+      Cache cacheView, ObjectMapper objectMapper) {
     this.cacheView = cacheView;
     this.objectMapper = objectMapper;
-    this.ecsAccountMapper = ecsAccountMapper;
   }
 
   public List<EcsLoadBalancerCache> find(String account, String region) {
@@ -55,12 +52,6 @@ public class EcsLoadbalancerCacheClient {
 
   private Set<Map<String, Object>> fetchFromCache(String account, String region) {
     String accountFilter = account != null ? account : "*";
-    if (!"*".equals(accountFilter)) {
-      String awsAccountName = ecsAccountMapper.fromEcsAccountNameToAwsAccountName(accountFilter);
-      if (awsAccountName != null) {
-        accountFilter = awsAccountName;
-      }
-    }
     String regionFilter = region != null ? region : "*";
 
     String searchKey = Keys.getLoadBalancerKey("*", accountFilter, regionFilter, "*", "*") + "*";
@@ -118,8 +109,7 @@ public class EcsLoadbalancerCacheClient {
     Map<String, String> parts = Keys.parse(loadbalancerCache.getId());
 
     attributes.put("region", parts.get("region"));
-    String ecsAccount = ecsAccountMapper.fromAwsAccountNameToEcsAccountName(parts.get("account"));
-    attributes.put("account", ecsAccount);
+    attributes.put("account", parts.get("account"));
     attributes.put("loadBalancerType", parts.get("loadBalancerType"));
     attributes.put(
         "targetGroups",

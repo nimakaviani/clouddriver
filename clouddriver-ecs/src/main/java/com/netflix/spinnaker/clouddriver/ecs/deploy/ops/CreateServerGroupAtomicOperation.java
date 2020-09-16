@@ -62,7 +62,6 @@ import com.netflix.spinnaker.clouddriver.ecs.deploy.EcsServerGroupNameResolver;
 import com.netflix.spinnaker.clouddriver.ecs.deploy.description.CreateServerGroupDescription;
 import com.netflix.spinnaker.clouddriver.ecs.provider.agent.IamPolicyReader;
 import com.netflix.spinnaker.clouddriver.ecs.provider.agent.IamTrustRelationship;
-import com.netflix.spinnaker.clouddriver.ecs.security.NetflixAssumeRoleEcsCredentials;
 import com.netflix.spinnaker.clouddriver.ecs.services.EcsCloudMetricService;
 import com.netflix.spinnaker.clouddriver.ecs.services.SecurityGroupSelector;
 import com.netflix.spinnaker.clouddriver.ecs.services.SubnetSelector;
@@ -659,8 +658,6 @@ public class CreateServerGroupAtomicOperation
       role = ((AssumeRoleAmazonCredentials) credentials).getAssumeRole();
     } else if (credentials instanceof NetflixAssumeRoleAmazonCredentials) {
       role = ((NetflixAssumeRoleAmazonCredentials) credentials).getAssumeRole();
-    } else if (credentials instanceof NetflixAssumeRoleEcsCredentials) {
-      role = ((NetflixAssumeRoleEcsCredentials) credentials).getAssumeRole();
     } else {
       throw new UnsupportedOperationException(
           "The given kind of credentials is not supported, "

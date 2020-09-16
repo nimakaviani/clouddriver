@@ -22,13 +22,11 @@ import com.netflix.spinnaker.clouddriver.aws.model.AmazonSubnet
 import com.netflix.spinnaker.clouddriver.aws.provider.view.AmazonSubnetProvider
 import com.netflix.spinnaker.clouddriver.aws.security.NetflixAmazonCredentials
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsSubnet
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.AmazonPrimitiveConverter
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.EcsAccountMapper
 import spock.lang.Specification
 
 class SubnetSelectorSpec extends Specification {
 
-  public static final String ECS_ACCOUNT = 'ecsAccount'
+  public static final String ECS_ACCOUNT = 'awsAccount'
   public static final String AWS_ACCOUNT = 'awsAccount'
   public static final String REGION = 'us-west-2'
   public static final String AVAILABILITY_ZONE_1 = 'us-west-2a'
@@ -42,8 +40,6 @@ class SubnetSelectorSpec extends Specification {
   public static final String VPC_ID_2 = 'vpc-2'
 
   def amazonSubnetProvider = Mock(AmazonSubnetProvider)
-  def amazonPrimitiveConverter = Mock(AmazonPrimitiveConverter)
-  def accountMapper = Mock(EcsAccountMapper)
   def awsAccount = Mock(NetflixAmazonCredentials)
 
   def 'should find the right subnet'() {
@@ -110,15 +106,12 @@ class SubnetSelectorSpec extends Specification {
 
     awsAccount.name >> AWS_ACCOUNT
 
-    accountMapper.fromEcsAccountNameToAws(ECS_ACCOUNT) >> awsAccount
-
     amazonSubnetProvider.getAllMatchingKeyPattern(
       Keys.getSubnetKey('*', REGION, AWS_ACCOUNT)) >> [subnet1, subnet2, subnet3]
 
     def aws_sets = Sets.newHashSet(subnet1, subnet2, subnet3);
-    amazonPrimitiveConverter.convertToEcsSubnet(aws_sets) >> [ecsSubnet1, ecsSubnet2, ecsSubnet3]
 
-    def subnetSelector = new SubnetSelector(amazonSubnetProvider, amazonPrimitiveConverter, accountMapper)
+    def subnetSelector = new SubnetSelector(amazonSubnetProvider)
 
 
     when:
@@ -182,8 +175,6 @@ class SubnetSelectorSpec extends Specification {
 
     awsAccount.name >> AWS_ACCOUNT
 
-    accountMapper.fromEcsAccountNameToAws(ECS_ACCOUNT) >> awsAccount
-
     def subnet_keys = Sets.newHashSet(
       Keys.getSubnetKey(subnet1.id, REGION, AWS_ACCOUNT),
       Keys.getSubnetKey(subnet2.id, REGION, AWS_ACCOUNT),
@@ -192,9 +183,8 @@ class SubnetSelectorSpec extends Specification {
     amazonSubnetProvider.loadResults(subnet_keys) >> [subnet1, subnet2, subnet3]
 
     def aws_sets = Sets.newHashSet(subnet1, subnet2, subnet3);
-    amazonPrimitiveConverter.convertToEcsSubnet(aws_sets) >> [ecsSubnet1, ecsSubnet2, ecsSubnet3]
 
-    def subnetSelector = new SubnetSelector(amazonSubnetProvider, amazonPrimitiveConverter, accountMapper)
+    def subnetSelector = new SubnetSelector(amazonSubnetProvider)
 
     when:
     def retrievedVpcIds = subnetSelector.getSubnetVpcIds(

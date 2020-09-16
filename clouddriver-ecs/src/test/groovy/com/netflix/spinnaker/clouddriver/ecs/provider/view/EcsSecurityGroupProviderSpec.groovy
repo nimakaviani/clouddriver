@@ -18,13 +18,12 @@ package com.netflix.spinnaker.clouddriver.ecs.provider.view
 import com.netflix.spinnaker.clouddriver.aws.model.AmazonSecurityGroup
 import com.netflix.spinnaker.clouddriver.aws.provider.view.AmazonSecurityGroupProvider
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsSecurityGroup
-import com.netflix.spinnaker.clouddriver.ecs.security.NetflixECSCredentials
 import spock.lang.Specification
 import spock.lang.Subject
 
 class EcsSecurityGroupProviderSpec extends Specification {
 
-  public static final String ECS_ACCOUNT = 'ecsAccount'
+  public static final String ECS_ACCOUNT = 'awsAccount'
   public static final String AWS_ACCOUNT = 'awsAccount'
   public static final String REGION = 'us-west-2'
   public static final String SG_ID_1 = 'sg-aa123456'
@@ -33,13 +32,10 @@ class EcsSecurityGroupProviderSpec extends Specification {
   public static final String SG_NAME_1 = 'hello'
   public static final String SG_NAME_2 = 'world'
 
-  def accountMapper = Mock(EcsAccountMapper)
-  def ecsCreds = Mock(NetflixECSCredentials)
   def securityGroupProvider = Mock(AmazonSecurityGroupProvider)
-  def primitiveConverter = new AmazonPrimitiveConverter(accountMapper)
 
   @Subject
-  def provider = new EcsSecurityGroupProvider(primitiveConverter, securityGroupProvider, accountMapper)
+  def provider = new EcsSecurityGroupProvider(securityGroupProvider)
 
   def sg1 = new AmazonSecurityGroup(
           accountName: AWS_ACCOUNT,
@@ -80,12 +76,6 @@ class EcsSecurityGroupProviderSpec extends Specification {
           null,
           null
   )
-
-  def setup() {
-    ecsCreds.getName() >> ECS_ACCOUNT
-    accountMapper.fromEcsAccountNameToAwsAccountName(ECS_ACCOUNT) >> AWS_ACCOUNT
-    accountMapper.fromAwsAccountNameToEcs(AWS_ACCOUNT) >> ecsCreds
-  }
 
   def 'should get all security groups from the AWS provider and convert them to ECS security groups'() {
     given:

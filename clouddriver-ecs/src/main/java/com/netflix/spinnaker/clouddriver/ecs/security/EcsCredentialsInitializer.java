@@ -17,75 +17,42 @@
 package com.netflix.spinnaker.clouddriver.ecs.security;
 
 import com.netflix.spinnaker.clouddriver.aws.security.NetflixAmazonCredentials;
-import com.netflix.spinnaker.clouddriver.aws.security.NetflixAssumeRoleAmazonCredentials;
-import com.netflix.spinnaker.clouddriver.aws.security.config.CredentialsConfig;
 import com.netflix.spinnaker.clouddriver.aws.security.config.CredentialsLoader;
 import com.netflix.spinnaker.clouddriver.security.AccountCredentials;
 import com.netflix.spinnaker.clouddriver.security.AccountCredentialsRepository;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 @Configuration
 public class EcsCredentialsInitializer {
-
-  @Bean
-  @ConfigurationProperties("ecs")
-  public ECSCredentialsConfig ecsCredentialsConfig() {
-    return new ECSCredentialsConfig();
-  }
-
   @Bean
   @DependsOn("netflixAmazonCredentials")
-  public List<? extends NetflixAmazonCredentials> netflixECSCredentials(
+  public List<NetflixAmazonCredentials> netflixECSCredentials(
       CredentialsLoader<? extends NetflixAmazonCredentials> credentialsLoader,
-      ECSCredentialsConfig credentialsConfig,
       AccountCredentialsRepository accountCredentialsRepository)
       throws Throwable {
     return synchronizeECSAccounts(
-        credentialsLoader, credentialsConfig, accountCredentialsRepository);
+        credentialsLoader, accountCredentialsRepository);
   }
 
-  private List<? extends NetflixAmazonCredentials> synchronizeECSAccounts(
+  private List<NetflixAmazonCredentials> synchronizeECSAccounts(
       CredentialsLoader<? extends NetflixAmazonCredentials> credentialsLoader,
-      ECSCredentialsConfig ecsCredentialsConfig,
       AccountCredentialsRepository accountCredentialsRepository)
       throws Throwable {
 
     // TODO: add support for mutable accounts.
-    // List deltaAccounts = ProviderUtils.calculateAccountDeltas(accountCredentialsRepository,
-    // NetflixAmazonCredentials.class, accounts);
     List<NetflixAmazonCredentials> credentials = new LinkedList<>();
 
     for (AccountCredentials accountCredentials : accountCredentialsRepository.getAll()) {
       if (accountCredentials instanceof NetflixAmazonCredentials) {
-        for (ECSCredentialsConfig.Account ecsAccount : ecsCredentialsConfig.getAccounts()) {
-          if (ecsAccount.getAwsAccount().equals(accountCredentials.getName())) {
-
-            NetflixAmazonCredentials netflixAmazonCredentials =
-                (NetflixAmazonCredentials) accountCredentials;
-
-            // TODO: accountCredentials should be serializable or somehow cloneable.
-            CredentialsConfig.Account account =
-                EcsAccountBuilder.build(netflixAmazonCredentials, ecsAccount.getName(), "ecs");
-
-            CredentialsConfig ecsCopy = new CredentialsConfig();
-            ecsCopy.setAccounts(Collections.singletonList(account));
-
-            NetflixECSCredentials ecsCredentials =
-                new NetflixAssumeRoleEcsCredentials(
-                    (NetflixAssumeRoleAmazonCredentials) credentialsLoader.load(ecsCopy).get(0),
-                    ecsAccount.getAwsAccount());
-            credentials.add(ecsCredentials);
-
-            accountCredentialsRepository.save(ecsAccount.getName(), ecsCredentials);
-            break;
+          NetflixAmazonCredentials amazonCreds = (NetflixAmazonCredentials) accountCredentials;
+          if (amazonCreds.getEcsEnabled()) {
+              credentials.add(amazonCreds);
           }
-        }
       }
     }
 

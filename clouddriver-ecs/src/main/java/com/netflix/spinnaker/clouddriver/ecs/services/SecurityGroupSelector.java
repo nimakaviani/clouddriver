@@ -16,11 +16,8 @@
 
 package com.netflix.spinnaker.clouddriver.ecs.services;
 
-import com.netflix.spinnaker.clouddriver.aws.model.AmazonSecurityGroup;
 import com.netflix.spinnaker.clouddriver.aws.provider.view.AmazonSecurityGroupProvider;
 import com.netflix.spinnaker.clouddriver.ecs.model.EcsSecurityGroup;
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.AmazonPrimitiveConverter;
-import com.netflix.spinnaker.clouddriver.ecs.provider.view.EcsAccountMapper;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,33 +29,22 @@ import org.springframework.stereotype.Component;
 public class SecurityGroupSelector {
 
   AmazonSecurityGroupProvider amazonSecurityGroupProvider;
-  AmazonPrimitiveConverter converter;
-  EcsAccountMapper ecsAccountMapper;
 
   @Autowired
   public SecurityGroupSelector(
-      AmazonSecurityGroupProvider amazonSecurityGroupProvider,
-      AmazonPrimitiveConverter converter,
-      EcsAccountMapper ecsAccountMapper) {
+      AmazonSecurityGroupProvider amazonSecurityGroupProvider){
     this.amazonSecurityGroupProvider = amazonSecurityGroupProvider;
-    this.converter = converter;
-    this.ecsAccountMapper = ecsAccountMapper;
   }
 
   public Collection<String> resolveSecurityGroupNames(
-      String ecsAccountName,
+      String accountName,
       String region,
       Collection<String> securityGroupNames,
       Collection<String> vpcIds) {
-    String correspondingAwsAccountName =
-        ecsAccountMapper.fromEcsAccountNameToAws(ecsAccountName).getName();
-
-    Collection<AmazonSecurityGroup> amazonSecurityGroups =
-        amazonSecurityGroupProvider.getAllByAccountAndRegion(
-            true, correspondingAwsAccountName, region);
 
     Collection<EcsSecurityGroup> ecsSecurityGroups =
-        converter.convertToEcsSecurityGroup(amazonSecurityGroups);
+      amazonSecurityGroupProvider.getAllByAccountAndRegion(
+        true, accountName, region).stream().map(it -> new EcsSecurityGroup(it)).collect(Collectors.toSet());
 
     Set<String> securityGroupNamesSet = new HashSet<String>(securityGroupNames);
     Set<String> vpcIdsSet = new HashSet<String>(vpcIds);
