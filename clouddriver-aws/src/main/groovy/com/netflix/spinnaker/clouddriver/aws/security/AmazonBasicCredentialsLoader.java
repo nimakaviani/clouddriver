@@ -27,7 +27,6 @@ import com.netflix.spinnaker.credentials.definition.CredentialsParser;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class AmazonBasicCredentialsLoader<T extends CredentialsConfig.Account, U extends NetflixAmazonCredentials>
     extends BasicCredentialsLoader<T, U> {
