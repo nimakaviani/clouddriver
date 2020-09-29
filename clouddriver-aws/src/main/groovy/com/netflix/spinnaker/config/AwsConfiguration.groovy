@@ -185,7 +185,7 @@ class AwsConfiguration {
   }
 
   @Bean
-  @DependsOn('netflixAmazonCredentials')
+  @DependsOn('amazonCredentialsLoader')
   BasicAmazonDeployHandler basicAmazonDeployHandler(RegionScopedProviderFactory regionScopedProviderFactory,
                                                     CredentialsRepository<? extends NetflixAmazonCredentials> accountCredentialsRepository,
                                                     DeployDefaults deployDefaults,
@@ -211,16 +211,12 @@ class AwsConfiguration {
   }
 
   @Bean
-  @DependsOn('netflixAmazonCredentials')
-  AwsCleanupProvider awsOperationProvider(AwsConfigurationProperties awsConfigurationProperties,
-                                          AmazonClientProvider amazonClientProvider,
-                                          AccountCredentialsRepository accountCredentialsRepository,
-                                          DeployDefaults deployDefaults) {
+  AwsCleanupProvider awsOperationProvider() {
     return new AwsCleanupProvider(Collections.newSetFromMap(new ConcurrentHashMap<Agent, Boolean>()))
   }
 
   @Bean
-  @DependsOn('netflixAmazonCredentials')
+  @DependsOn('amazonCredentialsLoader')
   SecurityGroupLookupFactory securityGroupLookup(AmazonClientProvider amazonClientProvider,
                                                  CredentialsRepository<? extends NetflixAmazonCredentials> accountCredentialsRepository) {
     new SecurityGroupLookupFactory(amazonClientProvider, accountCredentialsRepository)

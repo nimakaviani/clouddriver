@@ -25,16 +25,14 @@ import com.netflix.spinnaker.credentials.definition.BasicCredentialsLoader;
 import com.netflix.spinnaker.credentials.definition.CredentialsDefinitionSource;
 import com.netflix.spinnaker.credentials.definition.CredentialsParser;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public class AmazonBasicCredentialsLoader<
-        T extends CredentialsConfig.Account, U extends NetflixAmazonCredentials>
+public class AmazonBasicCredentialsLoader<T extends CredentialsConfig.Account, U extends NetflixAmazonCredentials>
     extends BasicCredentialsLoader<T, U> {
   protected final CredentialsConfig credentialsConfig;
   protected final DefaultAccountConfigurationProperties defaultAccountConfigurationProperties;
-  protected final Map<String, T> loadedDefinitions = new ConcurrentHashMap<>();
   protected String defaultEnvironment;
   protected String defaultAccountType;
 
@@ -43,7 +41,8 @@ public class AmazonBasicCredentialsLoader<
       CredentialsParser<T, U> parser,
       CredentialsRepository<U> credentialsRepository,
       CredentialsConfig credentialsConfig,
-      DefaultAccountConfigurationProperties defaultAccountConfigurationProperties) {
+      DefaultAccountConfigurationProperties defaultAccountConfigurationProperties
+  ) {
     super(definitionSource, parser, credentialsRepository);
     this.credentialsConfig = credentialsConfig;
     this.defaultAccountConfigurationProperties = defaultAccountConfigurationProperties;
