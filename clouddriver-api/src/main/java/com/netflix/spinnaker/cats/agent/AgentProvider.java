@@ -24,7 +24,5 @@ import java.util.Collection;
 public interface AgentProvider {
   boolean supports(String providerName);
 
-  default Collection<Agent> agents(Credentials credentials) {
-    return null;
-  }
+  Collection<Agent> agents(Credentials credentials);
 }
