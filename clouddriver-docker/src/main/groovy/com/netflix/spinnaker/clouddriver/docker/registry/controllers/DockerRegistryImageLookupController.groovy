@@ -112,20 +112,20 @@ class DockerRegistryImageLookupController {
           account   : it.attributes.account,      //TODO: Deprecate
           registry  : credentials.registry,       //TODO: Deprecate
           digest    : it.attributes.digest,       //TODO: Deprecate
-          artifact  : generateArtifact(credentials.registry, parse.repository, parse.tag)
+          artifact  : generateArtifact(credentials.registry, parse.repository, parse.tag, it.attributes.labels)
         ]
       }
     }
   }
 
-  Map generateArtifact( String registry,def repository, def tag) {
+  Map generateArtifact( String registry,def repository, def tag, def labels) {
     String reference = "${registry}/${repository}:${tag}"
     [
       name      : repository,
       type      : "docker",
       version   : tag,
       reference : reference,
-      metadata  : [ registry: registry ]
+      metadata  : [ registry: registry, labels: labels ]
     ]
   }
 
