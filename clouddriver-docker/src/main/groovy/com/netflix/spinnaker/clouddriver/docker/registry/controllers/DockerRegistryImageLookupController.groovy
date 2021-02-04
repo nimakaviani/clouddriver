@@ -107,25 +107,27 @@ class DockerRegistryImageLookupController {
       } else {
         def parse = Keys.parse(it.id)
         return [
-          repository: (String) parse.repository,  //TODO: Deprecate
-          tag       : (String) parse.tag,         //TODO: Deprecate
-          account   : it.attributes.account,      //TODO: Deprecate
-          registry  : credentials.registry,       //TODO: Deprecate
-          digest    : it.attributes.digest,       //TODO: Deprecate
-          artifact  : generateArtifact(credentials.registry, parse.repository, parse.tag, it.attributes.labels)
+          repository  : (String) parse.repository,  //TODO: Deprecate
+          tag         : (String) parse.tag,         //TODO: Deprecate
+          account     : it.attributes.account,      //TODO: Deprecate
+          registry    : credentials.registry,       //TODO: Deprecate
+          digest      : it.attributes.digest,       //TODO: Deprecate
+          commitId    : it.attributes.labels?.COMMIT_ID,
+          buildNumber : it.attributes.labels?.BUILD_NUMBER,
+          artifact    : generateArtifact(credentials.registry, parse.repository, parse.tag)
         ]
       }
     }
   }
 
-  Map generateArtifact( String registry,def repository, def tag, def labels) {
+  Map generateArtifact( String registry,def repository, def tag) {
     String reference = "${registry}/${repository}:${tag}"
     [
       name      : repository,
       type      : "docker",
       version   : tag,
       reference : reference,
-      metadata  : [ registry: registry, labels: labels ]
+      metadata  : [ registry: registry ]
     ]
   }
 
