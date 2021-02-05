@@ -115,20 +115,20 @@ class DockerRegistryImageLookupController {
           commitId    : it.attributes.labels?.commitId,
           buildNumber : it.attributes.labels?.buildNumber,
           branch      : it.attributes.labels?.branch,
-          artifact    : generateArtifact(credentials.registry, parse.repository, parse.tag)
+          artifact    : generateArtifact(credentials.registry, parse.repository, parse.tag, it.attributes.labels)
         ]
       }
     }
   }
 
-  Map generateArtifact( String registry,def repository, def tag) {
+  Map generateArtifact( String registry,def repository, def tag, def labels) {
     String reference = "${registry}/${repository}:${tag}"
     [
       name      : repository,
       type      : "docker",
       version   : tag,
       reference : reference,
-      metadata  : [ registry: registry ]
+      metadata  : [ registry: registry, labels: labels ]
     ]
   }
 
