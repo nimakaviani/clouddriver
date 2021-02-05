@@ -112,8 +112,9 @@ class DockerRegistryImageLookupController {
           account     : it.attributes.account,      //TODO: Deprecate
           registry    : credentials.registry,       //TODO: Deprecate
           digest      : it.attributes.digest,       //TODO: Deprecate
-          commitId    : it.attributes.labels?.COMMIT_ID,
-          buildNumber : it.attributes.labels?.BUILD_NUMBER,
+          commitId    : it.attributes.labels?.commitId,
+          buildNumber : it.attributes.labels?.buildNumber,
+          branch      : it.attributes.labels?.branch,
           artifact    : generateArtifact(credentials.registry, parse.repository, parse.tag)
         ]
       }
